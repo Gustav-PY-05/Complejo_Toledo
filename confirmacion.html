@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Reserva - Complejo Toledo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .confirmacion { border: 2px solid #27ae60; padding: 30px; border-radius: 10px; background: #f8fff8; }
+        h1 { color: #27ae60; text-align: center; }
+        .detalles { margin: 20px 0; }
+        .detalle-item { margin: 10px 0; padding: 10px; background: white; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="confirmacion">
+        <h1>✅ Reserva Confirmada</h1>
+        
+        <div class="detalles">
+            <div class="detalle-item"><strong>ID de Reserva:</strong> {{ reserva.id }}</div>
+            <div class="detalle-item"><strong>Cliente:</strong> {{ cliente.nombre }} {{ cliente.apellido }}</div>
+            <div class="detalle-item"><strong>Cancha:</strong> {{ cancha.nombre }} ({{ cancha.tipo }})</div>
+            <div class="detalle-item"><strong>Fecha:</strong> {{ reserva.fecha_reserva.strftime('%d/%m/%Y') }}</div>
+            <div class="detalle-item"><strong>Horario:</strong> {{ reserva.horario }}</div>
+            <div class="detalle-item"><strong>Duración:</strong> {{ reserva.horas }} horas</div>
+            <div class="detalle-item"><strong>Método de Pago:</strong> {{ reserva.metodo_pago }}</div>
+            <div class="detalle-item"><strong>Monto Total:</strong> Gs.{{ "{:,}".format(reserva.monto_total) }}</div>
+            <div class="detalle-item"><strong>Estado:</strong> {{ reserva.estado }}</div>
+        </div>
+        
+        <p>¡Gracias por tu reserva! Te esperamos en el Complejo Deportivo Toledo.</p>
+        <p><a href="/">← Hacer otra reserva</a></p>
+    </div>
+</body>
+</html>

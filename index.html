@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complejo Deportivo Toledo - Reservas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+        .cancha-card { border: 1px solid #ddd; padding: 20px; margin: 15px 0; border-radius: 8px; background: #fafafa; }
+        .cancha-card h3 { color: #27ae60; margin-bottom: 10px; }
+        .precio { font-size: 1.2em; color: #e74c3c; font-weight: bold; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2980b9; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .hidden { display: none; }
+        .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .horario-btn { margin: 5px; padding: 8px 15px; }
+        .disponible { background: #27ae60; }
+        .ocupado { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏟️ Complejo Deportivo Toledo - Reservas</h1>
+        
+        <!-- Paso 1: Selección de Cancha -->
+        <div id="paso-1">
+            <h2>Selecciona una Cancha:</h2>
+            {% for cancha in canchas %}
+            <div class="cancha-card">
+                <h3>{{ cancha.nombre }} - {{ cancha.tipo }}</h3>
+                <p class="precio">Precio: Gs.{{ "{:,}".format(cancha.precio_hora) }}/hora</p>
+                <button onclick="seleccionarCancha({{ cancha.id }}, '{{ cancha.nombre }}')">
+                    Seleccionar {{ cancha.nombre }}
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Paso 2: Selección de Fecha y Horario -->
+        <div id="paso-2" class="hidden">
+            <h2>Selecciona Fecha y Horario - <span id="nombre-cancha"></span></h2>
+            
+            <div class="form-group">
+                <label for="fecha-reserva">Fecha:</label>
+                <input type="date" id="fecha-reserva" min="{{ date_today }}" onchange="cargarHorarios()">
+            </div>
+            
+            <div id="horarios-container">
+                <p>Selecciona una fecha para ver los horarios disponibles</p>
+            </div>
+            
+            <button onclick="volverAPaso1()">← Volver</button>
+        </div>
+        
+        <!-- Paso 3: Formulario de Reserva -->
+        <div id="paso-3" class="hidden">
+            <h2>Completa tus Datos</h2>
+            
+            <form id="formulario-reserva">
+                <input type="hidden" id="cancha-id" name="cancha_id">
+                <input type="hidden" id="horario-seleccionado" name="horario">
+                <input type="hidden" id="fecha-seleccionada" name="fecha">
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre *</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apellido">Apellido *</label>
+                    <input type="text" id="apellido" name="apellido" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cedula">Cédula *</label>
+                    <input type="text" id="cedula" name="cedula" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefono">Teléfono *</label>
+                    <input type="tel" id="telefono" name="telefono" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="metodo-pago">Método de Pago *</label>
+                    <select id="metodo-pago" name="metodo_pago" required>
+                        <option value="">Seleccione...</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="tarjeta">Tarjeta</option>
+                    </select>
+                </div>
+                
+                <button type="submit">Confirmar Reserva</button>
+                <button type="button" onclick="volverAPaso2()">← Volver</button>
+            </form>
+        </div>
+        
+        <!-- Resultado -->
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        const date_today = "{{ date_today }}";
+        document.getElementById('fecha-reserva').min = date_today;
+        document.getElementById('fecha-reserva').value = date_today;
+        
+        let canchaSeleccionada = null;
+        let horarioSeleccionado = null;
+        let fechaSeleccionada = null;
+        
+        function seleccionarCancha(canchaId, canchaNombre) {
+            canchaSeleccionada = canchaId;
+            document.getElementById('nombre-cancha').textContent = canchaNombre;
+            document.getElementById('cancha-id').value = canchaId;
+            document.getElementById('paso-1').classList.add('hidden');
+            document.getElementById('paso-2').classList.remove('hidden');
+            cargarHorarios();
+        }
+        
+        function volverAPaso1() {
+            document.getElementById('paso-2').classList.add('hidden');
+            document.getElementById('paso-1').classList.remove('hidden');
+        }
+        
+        function volverAPaso2() {
+            document.getElementById('paso-3').classList.add('hidden');
+            document.getElementById('paso-2').classList.remove('hidden');
+        }
+        
+        async function cargarHorarios() {
+            const fecha = document.getElementById('fecha-reserva').value;
+            if (!fecha || !canchaSeleccionada) return;
+            
+            const response = await fetch(`/disponibilidad?cancha_id=${canchaSeleccionada}&fecha=${fecha}`);
+            const data = await response.json();
+            
+            const container = document.getElementById('horarios-container');
+            container.innerHTML = '<h3>Horarios Disponibles:</h3>';
+            
+            data.horarios_disponibles.forEach(horario => {
+                const button = document.createElement('button');
+                button.className = 'horario-btn disponible';
+                button.textContent = horario;
+                button.onclick = () => seleccionarHorario(horario, fecha);
+                container.appendChild(button);
+            });
+            
+            if (data.horarios_ocupados.length > 0) {
+                const ocupadosDiv = document.createElement('div');
+                ocupadosDiv.innerHTML = '<h3>Horarios Ocupados:</h3>';
+                data.horarios_ocupados.forEach(horario => {
+                    const span = document.createElement('span');
+                    span.className = 'horario-btn ocupado';
+                    span.textContent = horario;
+                    span.style.margin = '5px';
+                    ocupadosDiv.appendChild(span);
+                });
+                container.appendChild(ocupadosDiv);
+            }
+        }
+        
+        function seleccionarHorario(horario, fecha) {
+            horarioSeleccionado = horario;
+            fechaSeleccionada = fecha;
+            document.getElementById('horario-seleccionado').value = horario;
+            document.getElementById('fecha-seleccionada').value = fecha;
+            document.getElementById('paso-2').classList.add('hidden');
+            document.getElementById('paso-3').classList.remove('hidden');
+        }
+        
+        document.getElementById('formulario-reserva').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const datos = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/reservar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                
+                const resultado = await response.json();
+                
+                if (resultado.success) {
+                    document.getElementById('paso-3').classList.add('hidden');
+                    document.getElementById('resultado').innerHTML = `
+                        <div class="success">
+                            <h3>✅ ${resultado.mensaje}</h3>
+                            <p><strong>Cliente:</strong> ${resultado.detalles.cliente}</p>
+                            <p><strong>Cancha:</strong> ${resultado.detalles.cancha} (${resultado.detalles.tipo})</p>
+                            <p><strong>Fecha:</strong> ${resultado.detalles.fecha}</p>
+                            <p><strong>Horario:</strong> ${resultado.detalles.horario}</p>
+                            <p><strong>Método de Pago:</strong> ${resultado.detalles.metodo_pago}</p>
+                            <p><strong>Monto Total:</strong> ${resultado.detalles.monto}</p>
+                            <p><a href="/confirmacion/${resultado.reserva_id}">Ver confirmación detallada</a></p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('resultado').innerHTML = `
+                        <div class="error">
+                            <h3>❌ Error</h3>
+                            <p>${resultado.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('resultado').innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error de conexión</h3>
+                        <p>Inténtalo de nuevo más tarde</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

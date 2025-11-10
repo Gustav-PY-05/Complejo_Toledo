@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Reservas - Admin Complejo Toledo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f6fa; }
+        .header { background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #2c3e50; }
+        .logout-btn { background: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; }
+        .logout-btn:hover { background: #c0392b; }
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+        .nav-menu { display: flex; gap: 15px; margin-bottom: 20px; }
+        .nav-btn { background: #3498db; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 16px; }
+        .nav-btn:hover { background: #2980b9; }
+        .filtros { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .filtros select, .filtros input { padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; }
+        .filtros button { background: #2ecc71; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .filtros button:hover { background: #27ae60; }
+        .reservas-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .reservas-table th, .reservas-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+        .reservas-table th { background: #34495e; color: white; position: sticky; top: 0; }
+        .reservas-table tr:hover { background: #f8f9fa; }
+        .estado-pendiente { background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .estado-confirmada { background: #d1ecf1; color: #0c5460; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .estado-completada { background: #d4edda; color: #155724; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .estado-cancelada { background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .accion-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin: 2px; font-size: 0.8em; }
+        .btn-confirmar { background: #28a745; color: white; }
+        .btn-completar { background: #17a2b8; color: white; }
+        .btn-cancelar { background: #dc3545; color: white; }
+        .btn-pendiente { background: #ffc107; color: black; }
+        .sin-reservas { text-align: center; padding: 40px; color: #7f8c8d; background: white; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Gestión de Reservas - Complejo Toledo</h1>
+        <a href="/admin/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+    </div>
+
+    <div class="container">
+        <div class="nav-menu">
+            <a href="/admin/dashboard" class="nav-btn">📊 Dashboard</a>
+            <a href="/admin/reservas" class="nav-btn">📋 Gestión de Reservas</a>
+            <a href="/" class="nav-btn" target="_blank">🌐 Ver Sitio Web</a>
+        </div>
+
+        <div class="filtros">
+            <select id="filtro-estado">
+                <option value="todas" {% if filtro_estado == 'todas' %}selected{% endif %}>Todos los estados</option>
+                <option value="pendiente" {% if filtro_estado == 'pendiente' %}selected{% endif %}>Pendientes</option>
+                <option value="confirmada" {% if filtro_estado == 'confirmada' %}selected{% endif %}>Confirmadas</option>
+                <option value="completada" {% if filtro_estado == 'completada' %}selected{% endif %}>Completadas</option>
+                <option value="cancelada" {% if filtro_estado == 'cancelada' %}selected{% endif %}>Canceladas</option>
+            </select>
+            
+            <input type="date" id="filtro-fecha" value="{{ filtro_fecha }}">
+            
+            <button onclick="aplicarFiltros()">🔍 Aplicar Filtros</button>
+            <button onclick="limpiarFiltros()" style="background: #95a5a6;">🔄 Limpiar</button>
+        </div>
+
+        {% if reservas %}
+        <div style="overflow-x: auto;">
+            <table class="reservas-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Teléfono</th>
+                        <th>Cancha</th>
+                        <th>Fecha</th>
+                        <th>Horario</th>
+                        <th>Estado</th>
+                        <th>Método Pago</th>
+                        <th>Monto</th>
+                        <th>Fecha Creación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr>
+                        <td>#{{ reserva.id }}</td>
+                        <td>{{ reserva.cliente_nombre }}</td>
+                        <td>{{ reserva.cliente_telefono }}</td>
+                        <td>{{ reserva.cancha_nombre }} ({{ reserva.cancha_tipo }})</td>
+                        <td>{{ reserva.fecha_reserva }}</td>
+                        <td>{{ reserva.horario }}</td>
+                        <td>
+                            {% if reserva.estado == 'pendiente' %}
+                                <span class="estado-pendiente">⏳ {{ reserva.estado }}</span>
+                            {% elif reserva.estado == 'confirmada' %}
+                                <span class="estado-confirmada">✅ {{ reserva.estado }}</span>
+                            {% elif reserva.estado == 'completada' %}
+                                <span class="estado-completada">🏁 {{ reserva.estado }}</span>
+                            {% else %}
+                                <span class="estado-cancelada">❌ {{ reserva.estado }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ reserva.metodo_pago or 'No especificado' }}</td>
+                        <td>Gs.{{ "{:,}".format(reserva.monto) }}</td>
+                        <td>{{ reserva.fecha_creacion }}</td>
+                        <td>
+                            {% if reserva.estado == 'pendiente' %}
+                                <button class="accion-btn btn-confirmar" onclick="cambiarEstado({{ reserva.id }}, 'confirmada')">✅ Confirmar</button>
+                                <button class="accion-btn btn-cancelar" onclick="cambiarEstado({{ reserva.id }}, 'cancelada')">❌ Cancelar</button>
+                            {% elif reserva.estado == 'confirmada' %}
+                                <button class="accion-btn btn-completar" onclick="cambiarEstado({{ reserva.id }}, 'completada')">🏁 Completar</button>
+                                <button class="accion-btn btn-cancelar" onclick="cambiarEstado({{ reserva.id }}, 'cancelada')">❌ Cancelar</button>
+                            {% elif reserva.estado == 'completada' %}
+                                <button class="accion-btn btn-pendiente" onclick="cambiarEstado({{ reserva.id }}, 'pendiente')">↩️ Reabrir</button>
+                            {% else %}
+                                <button class="accion-btn btn-pendiente" onclick="cambiarEstado({{ reserva.id }}, 'pendiente')">↩️ Reactivar</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="sin-reservas">
+            <h3>No hay reservas que coincidan con los filtros</h3>
+            <p>Intenta cambiar los criterios de búsqueda</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function aplicarFiltros() {
+            const estado = document.getElementById('filtro-estado').value;
+            const fecha = document.getElementById('filtro-fecha').value;
+            
+            let url = `/admin/reservas?estado=${estado}`;
+            if (fecha) {
+                url += `&fecha=${fecha}`;
+            }
+            
+            window.location.href = url;
+        }
+
+        function limpiarFiltros() {
+            window.location.href = '/admin/reservas';
+        }
+
+        async function cambiarEstado(reservaId, nuevoEstado) {
+            if (!confirm(`¿Estás seguro de que quieres cambiar el estado a "${nuevoEstado}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/actualizar_estado', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        reserva_id: reservaId,
+                        nuevo_estado: nuevoEstado
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Estado actualizado correctamente');
+                    location.reload(); // Recargar la página para ver los cambios
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin Complejo Toledo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f6fa; }
+        .header { background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #2c3e50; }
+        .logout-btn { background: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; }
+        .logout-btn:hover { background: #c0392b; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .stat-number { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
+        .stat-total { color: #3498db; }
+        .stat-hoy { color: #2ecc71; }
+        .stat-pendientes { color: #f39c12; }
+        .stat-confirmadas { color: #9b59b6; }
+        .section { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .section h2 { color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+        .nav-menu { display: flex; gap: 15px; margin-bottom: 20px; }
+        .nav-btn { background: #3498db; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 16px; }
+        .nav-btn:hover { background: #2980b9; }
+        .reservas-table { width: 100%; border-collapse: collapse; }
+        .reservas-table th, .reservas-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+        .reservas-table th { background: #34495e; color: white; }
+        .reservas-table tr:hover { background: #f8f9fa; }
+        .estado-pendiente { background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .estado-confirmada { background: #d1ecf1; color: #0c5460; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .estado-completada { background: #d4edda; color: #155724; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .estado-cancelada { background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏟️ Dashboard - Complejo Deportivo Toledo</h1>
+        <a href="/admin/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+    </div>
+
+    <div class="container">
+        <div class="nav-menu">
+            <a href="/admin/dashboard" class="nav-btn">📊 Dashboard</a>
+            <a href="/admin/reservas" class="nav-btn">📋 Gestión de Reservas</a>
+            <a href="/" class="nav-btn" target="_blank">🌐 Ver Sitio Web</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Reservas</h3>
+                <div class="stat-number stat-total">{{ total_reservas }}</div>
+                <p>Reservas en el sistema</p>
+            </div>
+            <div class="stat-card">
+                <h3>Reservas Hoy</h3>
+                <div class="stat-number stat-hoy">{{ reservas_hoy }}</div>
+                <p>Para la fecha de hoy</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pendientes</h3>
+                <div class="stat-number stat-pendientes">{{ reservas_pendientes }}</div>
+                <p>Por confirmar</p>
+            </div>
+            <div class="stat-card">
+                <h3>Confirmadas</h3>
+                <div class="stat-number stat-confirmadas">{{ reservas_confirmadas }}</div>
+                <p>Reservas activas</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Últimas Reservas</h2>
+            {% if ultimas_reservas %}
+            <table class="reservas-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Cancha</th>
+                        <th>Fecha</th>
+                        <th>Horario</th>
+                        <th>Estado</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in ultimas_reservas %}
+                    <tr>
+                        <td>#{{ reserva.id }}</td>
+                        <td>{{ reserva.cliente }}</td>
+                        <td>{{ reserva.cancha }}</td>
+                        <td>{{ reserva.fecha }}</td>
+                        <td>{{ reserva.horario }}</td>
+                        <td>
+                            {% if reserva.estado == 'pendiente' %}
+                                <span class="estado-pendiente">⏳ {{ reserva.estado }}</span>
+                            {% elif reserva.estado == 'confirmada' %}
+                                <span class="estado-confirmada">✅ {{ reserva.estado }}</span>
+                            {% elif reserva.estado == 'completada' %}
+                                <span class="estado-completada">🏁 {{ reserva.estado }}</span>
+                            {% else %}
+                                <span class="estado-cancelada">❌ {{ reserva.estado }}</span>
+                            {% endif %}
+                        </td>
+                        <td>Gs.{{ "{:,}".format(reserva.monto) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="text-align: center; color: #7f8c8d; padding: 40px;">No hay reservas recientes</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>📊 Reporte Rápido</h2>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <input type="date" id="fecha-reporte" value="{{ date_today }}">
+                <button onclick="generarReporte()" class="nav-btn">📈 Generar Reporte</button>
+            </div>
+            <div id="reporte-resultado" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- SECCIÓN DE LIMPIEZA DE RESERVAS - AGREGAR ESTO -->
+        <div class="section">
+            <h2>🧹 Limpieza de Reservas Antiguas</h2>
+            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                <strong>⚠️ Atención:</strong> Esta acción eliminará reservas de hace más de 30 días.
+            </div>
+            
+            <button onclick="limpiarReservasAntiguas()" class="nav-btn" style="background: #e74c3c;">
+                🗑️ Limpiar Reservas Antiguas
+            </button>
+            
+            <div id="limpieza-resultado" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- SECCIÓN DE BACKUP AGREGADA -->
+        <div class="section">
+            <h2>💾 Sistema de Backup</h2>
+            <button onclick="crearBackup()" class="nav-btn" style="background: #e67e22;">📦 Crear Backup</button>
+            <div id="backup-resultado" style="margin-top: 15px;"></div>
+        </div>
+
+    </div>
+
+    <script>
+async function limpiarReservasAntiguas() {
+    if (!confirm('¿Estás seguro de eliminar las reservas de hace más de 30 días?\n\nEsta acción NO se puede deshacer.')) {
+        return;
+    }
+
+    const resultadoDiv = document.getElementById('limpieza-resultado');
+    resultadoDiv.innerHTML = '<p>🔄 Eliminando reservas antiguas...</p>';
+    
+    try {
+        const response = await fetch('/admin/limpiar_reservas_antiguas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            resultadoDiv.innerHTML = `
+                <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px;">
+                    <h4>${result.mensaje}</h4>
+                    <p><strong>Reservas eliminadas:</strong> ${result.eliminadas}</p>
+                    <p><strong>Fecha límite:</strong> Reservas anteriores al ${result.fecha_limite}</p>
+                </div>
+            `;
+            
+            // Actualizar estadísticas después de 2 segundos
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+            
+        } else {
+            resultadoDiv.innerHTML = `
+                <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">
+                    ❌ Error: ${result.error}
+                </div>
+            `;
+        }
+    } catch (error) {
+        resultadoDiv.innerHTML = `
+            <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">
+                ❌ Error de conexión: ${error}
+            </div>
+        `;
+    }
+}
+        document.getElementById('fecha-reporte').value = new Date().toISOString().split('T')[0];
+
+        async function generarReporte() {
+            const fecha = document.getElementById('fecha-reporte').value;
+            const resultadoDiv = document.getElementById('reporte-resultado');
+            
+            try {
+                const response = await fetch(`/admin/reporte_diario?fecha=${fecha}`);
+                const reporte = await response.json();
+                
+                let html = `
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <h3>Reporte del ${new Date(reporte.fecha).toLocaleDateString('es-ES')}</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 15px 0;">
+                            <div style="background: white; padding: 15px; border-radius: 5px; text-align: center;">
+                                <strong>Total Reservas</strong><br>
+                                <span style="font-size: 1.5em; color: #3498db;">${reporte.total_reservas}</span>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 5px; text-align: center;">
+                                <strong>Ingresos</strong><br>
+                                <span style="font-size: 1.5em; color: #27ae60;">₡${reporte.ingresos_totales.toLocaleString()}</span>
+                            </div>
+                        </div>
+                `;
+                
+                if (Object.keys(reporte.reservas_por_estado).length > 0) {
+                    html += `<h4>Reservas por Estado:</h4><ul>`;
+                    for (const [estado, cantidad] of Object.entries(reporte.reservas_por_estado)) {
+                        html += `<li>${estado}: ${cantidad}</li>`;
+                    }
+                    html += `</ul>`;
+                }
+                
+                html += `</div>`;
+                resultadoDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultadoDiv.innerHTML = `<div style="color: #e74c3c;">Error al generar reporte: ${error}</div>`;
+            }
+        }
+
+        // FUNCIÓN DE BACKUP AGREGADA
+        async function crearBackup() {
+            const resultadoDiv = document.getElementById('backup-resultado');
+            resultadoDiv.innerHTML = '<p>🔄 Creando backup...</p>';
+            
+            try {
+                const response = await fetch('/admin/backup');
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultadoDiv.innerHTML = `
+                        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px;">
+                            <h4>✅ ${result.message}</h4>
+                            <p><strong>Estadísticas:</strong></p>
+                            <ul>
+                                <li>Reservas: ${result.estadisticas.reservas}</li>
+                                <li>Clientes: ${result.estadisticas.clientes}</li>
+                                <li>Canchas: ${result.estadisticas.canchas}</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    resultadoDiv.innerHTML = `<div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">❌ Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultadoDiv.innerHTML = `<div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">❌ Error de conexión: ${error}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

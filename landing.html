@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Cancha - Complejo Deportivo Toledo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; max-width: 500px; width: 100%; }
+        h1 { color: #2c3e50; margin-bottom: 20px; font-size: 2em; }
+        .highlight { color: #e74c3c; font-weight: bold; }
+        .info-card { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left; }
+        .info-card h3 { color: #2c3e50; margin-bottom: 10px; }
+        .btn { display: inline-block; background: #27ae60; color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-size: 1.2em; font-weight: bold; margin: 15px 0; transition: background 0.3s; }
+        .btn:hover { background: #219652; }
+        .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+        .feature { background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center; }
+        .whatsapp-btn { background: #25D366; color: white; padding: 12px 20px; border-radius: 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin: 10px; }
+        .price-list { text-align: left; margin: 15px 0; }
+        .price-item { display: flex; justify-content: space-between; margin: 8px 0; padding: 5px 0; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏟️ Complejo Deportivo <span class="highlight">Toledo</span></h1>
+        <p style="font-size: 1.2em; color: #666; margin-bottom: 30px;">Reserva tu cancha en 3 simples pasos</p>
+        
+        <div class="info-card">
+            <h3>⏰ Horarios Disponibles</h3>
+            <p><strong>17:00 - 23:00 hs</strong></p>
+            <p>Reservas de 1 hora | Intervalos cada hora</p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🏟️ 4 Canchas</h3>
+                <p>• Fútbol 5vs5<br>• Fútbol 6vs6<br>• Fútbol 6vs6 VIP<br>• Fútbol 7vs7</p>
+            </div>
+            <div class="feature">
+                <h3>⏱️ 1 Hora</h3>
+                <p>Reservas por hora completa</p>
+            </div>
+            <div class="feature">
+                <h3>💰 Desde ₲70,000</h3>
+                <p>Precios por hora</p>
+            </div>
+            <div class="feature">
+                <h3>✅ Confirmación Inmediata</h3>
+                <p>Recibe tu ID al instante</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>🎯 Precios por Hora</h3>
+            <div class="price-list">
+                <div class="price-item">
+                    <span>• Fútbol 5vs5 (Sintético):</span>
+                    <span><strong>₲70,000</strong></span>
+                </div>
+                <div class="price-item">
+                    <span>• Fútbol 6vs6 (Sintético):</span>
+                    <span><strong>₲90,000</strong></span>
+                </div>
+                <div class="price-item">
+                    <span>• Fútbol 6vs6 VIP:</span>
+                    <span><strong>₲140,000</strong></span>
+                </div>
+                <div class="price-item">
+                    <span>• Fútbol 7vs7:</span>
+                    <span><strong>₲90,000</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <a href="/" class="btn">🎯 RESERVAR AHORA</a>
+        
+        <div style="margin-top: 20px;">
+            <p style="color: #666; margin-bottom: 10px;">¿Tienes dudas?</p>
+            <a href="/whatsapp-demo" class="whatsapp-btn">
+                💬 Consultar por WhatsApp
+            </a>
+        </div>
+    </div>
+</body>
+</html>
